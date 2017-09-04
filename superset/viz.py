@@ -1529,11 +1529,15 @@ class KmeansViz(BaseViz):
             order_by_cols = fd.get('order_by_cols') or []
             d['orderby'] = [json.loads(t) for t in order_by_cols]
 
+        fd['analysis'] = True
         return d
 
     def get_data(self, df):
         logging.info("[kmeans] get_data")
-        return {}
+        return dict(
+            records=df.to_dict(orient="records"),
+            columns=list(df.columns),
+        )
 
 
 class MapboxViz(BaseViz):

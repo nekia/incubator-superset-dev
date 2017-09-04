@@ -330,7 +330,12 @@ class SqlaTable(Model, BaseDatasource):
 
     def get_query_str(self, query_obj):
         engine = self.database.get_sqla_engine()
-        qry = self.get_sqla_query(**query_obj)
+        if query_obj.get('form_data').get('analysis'):
+            logging.info("ANALYSIS !!!")
+            qry = sa.select("*")
+            qry = qry.select_from("km_sample")
+        else:
+            qry = self.get_sqla_query(**query_obj)
         sql = str(
             qry.compile(
                 engine,
@@ -375,7 +380,7 @@ class SqlaTable(Model, BaseDatasource):
             columns=None,
             form_data=None):
         """Querying any sqla table from this common interface"""
-
+        logging.info(str(form_data))
         template_kwargs = {
             'from_dttm': from_dttm,
             'groupby': groupby,
