@@ -106,9 +106,10 @@ class Slice(Model, AuditMixinNullable, ImportMixin):
     cache_timeout = Column(Integer)
     perm = Column(String(1000))
     owners = relationship(sm.user_model, secondary=slice_user)
+    analytics = Column(Boolean, default=False)
 
     export_fields = ('slice_name', 'datasource_type', 'datasource_name',
-                     'viz_type', 'params', 'cache_timeout')
+                     'viz_type', 'params', 'cache_timeout', 'analytics' )
 
     def __repr__(self):
         return self.slice_name

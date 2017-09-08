@@ -1528,7 +1528,7 @@ class KmeansViz(BaseViz):
             d['groupby'] = []
             order_by_cols = fd.get('order_by_cols') or []
             d['orderby'] = [json.loads(t) for t in order_by_cols]
-
+        d['analysis'] = True
         fd['analysis'] = True
         return d
 
