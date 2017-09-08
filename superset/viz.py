@@ -1539,6 +1539,45 @@ class KmeansViz(BaseViz):
             columns=list(df.columns),
         )
 
+class ArimaViz(BaseViz):
+
+    """ARIMA - Time Series Analysis
+
+    https://www.npmjs.com/package/d3-horizon-chart
+    """
+
+    viz_type = "arima"
+    verbose_name = _("ARIMA - Time Series Analysis")
+    credits = (
+        '<a href="http://madlib.apache.org/docs/latest/group__grp__arima.html">'
+        'ARIMA Time Series Analysis</a>')
+
+    def query_obj(self):
+        logging.info("[ARIMA] query_obj")
+        d = super(KmeansViz, self).query_obj()
+        fd = self.form_data
+
+        if fd.get('all_columns') and (fd.get('groupby') or fd.get('metrics')):
+            raise Exception(_(
+                "Choose either fields to [Group By] and [Metrics] or "
+                "[Columns], not both"))
+
+        if fd.get('all_columns'):
+            d['columns'] = fd.get('all_columns')
+            d['groupby'] = []
+            order_by_cols = fd.get('order_by_cols') or []
+            d['orderby'] = [json.loads(t) for t in order_by_cols]
+        d['analysis'] = True
+        fd['analysis'] = True
+        return d
+
+    def get_data(self, df):
+        logging.info("[ARIMA] get_data")
+        return dict(
+            records=df.to_dict(orient="records"),
+            columns=list(df.columns),
+        )
+
 
 class MapboxViz(BaseViz):
 
@@ -1709,6 +1748,7 @@ viz_types_list = [
     SeparatorViz,
     EventFlowViz,
     KmeansViz,
+    ArimaViz,
 ]
 
 viz_types = OrderedDict([(v.viz_type, v) for v in viz_types_list

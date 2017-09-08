@@ -967,6 +967,26 @@ export const visTypes = {
       },
     ],
   },
+
+  arima: {
+    label: 'ARIMA Time Series Analysis',
+    isAnalytics: true,
+    controlPanelSections: [
+      {
+        label: 'Analytics Options',
+        controlSetRows: [
+          ['all_columns'],
+          ['row_limit'],
+          ['num_cluster'],
+          ['fn_dist'],
+          ['agg_centroid'],
+          ['max_num_iterations'],
+          ['min_frac_reassigned'],
+        ],
+      },
+    ],
+  },
+
 };
 
 export default visTypes;

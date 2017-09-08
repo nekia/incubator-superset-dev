@@ -34,5 +34,6 @@ const vizMap = {
   dual_line: require('./nvd3_vis.js'),
   event_flow: require('./EventFlow.jsx'),
   kmeans: require('./table.js'),
+  arima: require('./table.js'),
 };
 export default vizMap;
