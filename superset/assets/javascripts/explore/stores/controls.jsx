@@ -933,7 +933,7 @@ export const controls = {
     type: 'TextControl',
     isInt: true,
     label: 'The Number Of Centroids',
-    default: '2',
+    default: 2,
     description: 'The number of centroids to calculate',
   },
 
@@ -972,7 +972,7 @@ export const controls = {
     type: 'TextControl',
     isInt: true,
     label: 'Max Iterations',
-    default: '20',
+    default: 20,
     description: 'The maximum number of iterations to perform',
   },
 
@@ -980,7 +980,7 @@ export const controls = {
     type: 'TextControl',
     isFloat: true,
     label: 'Min Fraction',
-    default: '0.001',
+    default: 0.001,
     description: (
       'The minimum fraction of centroids reassigned to continue' +
       'iterating. When fewer than this fraction of centroids are' +

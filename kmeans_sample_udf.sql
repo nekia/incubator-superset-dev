@@ -1,32 +1,16 @@
-DROP FUNCTION IF EXISTS kmeans_sample_udf( data_array_entry text[] );
-DROP FUNCTION IF EXISTS kmeans_sample_test( data_array_entry text[] );
+-- DROP FUNCTION IF EXISTS kmeans_sample_udf( data_array_entry text[] );
 DROP TABLE IF EXISTS km_sample CASCADE;
--- DROP TABLE IF EXISTS km_sample_src;
--- DROP TABLE IF EXISTS km_result;
-DROP TABLE IF EXISTS kmeans_sample_udf_ret;
+DROP TABLE IF EXISTS kmeans_sample_udf_ret CASCADE;
 
 CREATE TABLE kmeans_sample_udf_ret( pid integer, cluster_id integer );
 
-CREATE OR REPLACE FUNCTION kmeans_sample_test(data_array_entry text[])
-RETURNS text AS
-$$
-DECLARE
-    entry text = 'points1, points2';
-BEGIN
-
-    EXECUTE format('CREATE TABLE km_sample_src AS
-    SELECT b.pid, a.points_array as points from (
-        SELECT km_sample.pid, ARRAY[ %1$s ] as points_array FROM km_sample
-    ) a, km_sample b
-    where a.pid = b.pid', entry);
-
-    raise notice 'HELLO';
-    return 'Hello, World2.';
-END;
-$$ LANGUAGE plpgsql VOLATILE;
-
-
-CREATE OR REPLACE FUNCTION kmeans_sample_udf( data_array_entry text[] )
+CREATE OR REPLACE FUNCTION kmeans_sample_udf(
+    data_array_entry text[],
+    num_cluster integer,
+    fn_dist text,
+    agg_centroid text,
+    max_num_iterations integer,
+    min_frac_reassigned double precision )
 RETURNS setof kmeans_sample_udf_ret AS
 $$
 DECLARE
@@ -51,10 +35,11 @@ BEGIN
     ) a, km_sample b
     where a.pid = b.pid', entry);
 
-    CREATE TABLE km_result AS
-    SELECT * FROM madlib.kmeanspp('km_sample_src', 'points', 3,
-                            'madlib.squared_dist_norm2',
-                            'madlib.avg', 20, 0.001);
+    EXECUtE format('CREATE TABLE km_result AS
+    SELECT * FROM madlib.kmeanspp(''km_sample_src'', ''points'', $1,
+                            ''madlib.%s'',
+                            ''madlib.%s'', $2, $3)', fn_dist, agg_centroid )
+    USING num_cluster, max_num_iterations, min_frac_reassigned;
 
     RETURN QUERY SELECT data.pid,  (madlib.closest_column(centroids, points)).column_id as cluster_id
     FROM km_sample_src as data, km_result
@@ -107,6 +92,4 @@ select * from kmeans_sample_udf( ARRAY[
         'points11',
         'points12',
         'points13'
-    ]);
-
-select * from kmeans_sample_test( ARRAY['abc','def']);
+    ], 4, 'squared_dist_norm2', 'avg', 20, 0.001 );

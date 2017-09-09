@@ -1528,8 +1528,23 @@ class KmeansViz(BaseViz):
             d['groupby'] = []
             order_by_cols = fd.get('order_by_cols') or []
             d['orderby'] = [json.loads(t) for t in order_by_cols]
-        d['analysis'] = True
+        # d['analysis'] = True
         fd['analysis'] = True
+
+        statement = ''
+        for col in d['columns']:
+            statement = statement + '\'' + col + '\','
+
+        statement = statement[:-1]
+        statement = 'ARRAY[ ' + statement + ' ]'
+        logging.info(statement)
+        statement = statement + ', ' + str(fd.get('num_cluster'))
+        statement = statement + ', \'' + fd.get('fn_dist') + '\''
+        statement = statement + ', \'' + fd.get('agg_centroid') + '\''
+        statement = statement + ', ' + str(fd.get('max_num_iterations'))
+        statement = statement + ', ' + str(fd.get('min_frac_reassigned'))
+
+        fd['from_statement'] = 'kmeans_sample_udf( ' + statement + ' )'
         return d
 
     def get_data(self, df):

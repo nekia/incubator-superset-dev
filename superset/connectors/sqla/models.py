@@ -331,14 +331,11 @@ class SqlaTable(Model, BaseDatasource):
     def get_query_str(self, query_obj):
         engine = self.database.get_sqla_engine()
         if query_obj.get('form_data').get('analysis'):
+            fd = query_obj.get('form_data')
             logging.info("ANALYSIS !!!")
             logging.info(str(query_obj))
             qry = sa.select('*')
-            statement = ''
-            for col in query_obj.get('columns'):
-                statement = statement + '\'' + col + '\','
-            statement = statement[:-1]
-            qry = qry.select_from(text("kmeans_sample_udf( ARRAY[ " + statement + " ])"))
+            qry = qry.select_from(fd.get('from_statement'))
         else:
             qry = self.get_sqla_query(**query_obj)
         sql = str(
