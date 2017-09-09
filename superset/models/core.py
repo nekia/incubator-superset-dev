@@ -109,7 +109,7 @@ class Slice(Model, AuditMixinNullable, ImportMixin):
     analytics = Column(Boolean, default=False)
 
     export_fields = ('slice_name', 'datasource_type', 'datasource_name',
-                     'viz_type', 'params', 'cache_timeout', 'analytics' )
+                     'viz_type', 'params', 'cache_timeout' )
 
     def __repr__(self):
         return self.slice_name
