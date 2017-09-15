@@ -485,7 +485,7 @@ class AnalyticsModelView(SupersetModelView, DeleteMixin):  # noqa
         'slice_link': _("Slice"),
         'slice_name': _("Name"),
         'table': _("Table"),
-        'viz_type': _("Visualization Type"),
+        'viz_type': _("Analytics Type"),
     }
 
     def pre_update(self, obj):
@@ -1125,12 +1125,10 @@ class Superset(BaseSupersetView):
         viz_type = form_data.get("viz_type")
         slice_id = form_data.get('slice_id')
         user_id = g.user.get_id() if g.user else None
-
+        analytics = form_data.get('analytics') if form_data.get('analytics') else False
         slc = None
         if slice_id:
             slc = db.session.query(models.Slice).filter_by(id=slice_id).first()
-            if viz_type == 'kmeans' or viz_type == 'arima':
-                slc.analytics = True
 
         error_redirect = '/slicemodelview/list/'
         datasource = (
@@ -1185,6 +1183,7 @@ class Superset(BaseSupersetView):
             "standalone": standalone,
             "user_id": user_id,
             "forced_height": request.args.get('height'),
+            "analytics": analytics,
         }
         table_name = datasource.table_name \
             if datasource_type == 'table' \

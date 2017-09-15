@@ -74,6 +74,7 @@ export const controls = {
     label: 'Visualization Type',
     default: 'table',
     description: 'The type of visualization to display',
+    analytics: false,
   },
 
   metrics: {

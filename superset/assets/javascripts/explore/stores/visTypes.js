@@ -18,6 +18,14 @@ export const sections = {
       ['slice_id', 'cache_timeout'],
     ],
   },
+  datasourceAndAnalyticsType: {
+    label: 'Datasource & Analytics Type',
+    controlSetRows: [
+      ['datasource'],
+      ['viz_type'],
+      ['slice_id', 'cache_timeout'],
+    ],
+  },
   sqlaTimeSeries: {
     label: 'Time',
     description: 'Time related form attributes',
@@ -966,6 +974,13 @@ export const visTypes = {
         ],
       },
     ],
+    controlOverrides: {
+      viz_type: {
+        label: 'Analytics Type',
+        description: 'The type of Analytics to display',
+        analytics: true,
+      }
+    },
   },
 
   arima: {
@@ -994,7 +1009,7 @@ export default visTypes;
 export function sectionsToRender(vizType, datasourceType) {
   const viz = visTypes[vizType];
   return [].concat(
-    sections.datasourceAndVizType,
+    viz.hasOwnProperty('isAnalytics') ? ( viz.isAnalytics ? sections.datasourceAndAnalyticsType : sections.datasourceAndVizType ) : sections.datasourceAndVizType,
     datasourceType === 'table' ? sections.sqlaTimeSeries : sections.druidTimeSeries,
     viz.controlPanelSections,
     !viz.isAnalytics ? (

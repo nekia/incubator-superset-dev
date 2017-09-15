@@ -82,6 +82,7 @@ class ControlPanelsContainer extends React.Component {
                         validationErrors={this.props.controls[controlName].validationErrors}
                         actions={this.props.actions}
                         {...this.getControlData(controlName)}
+                        analytics={'analytics' in this.props.form_data ? true : false}
                       />
                   ))}
                 />

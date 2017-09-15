@@ -68,9 +68,12 @@ export default class VizTypeControl extends React.PureComponent {
   }
   render() {
     const filter = this.state.filter;
-    const filteredVizTypes = Object.keys(visTypes)
-      .filter(vt => filter.length === 0 || visTypes[vt].label.toLowerCase().includes(filter));
-
+    let filteredVizTypes = Object.keys(visTypes);
+    if ( this.props.analytics === false ) {
+      filteredVizTypes = filteredVizTypes.filter(vt => ! visTypes[vt].hasOwnProperty('isAnalytics') && ( filter.length === 1 || visTypes[vt].label.toLowerCase().includes(filter)));
+    } else {
+      filteredVizTypes = filteredVizTypes.filter(vt => visTypes[vt].isAnalytics && ( filter.length === 0 || visTypes[vt].label.toLowerCase().includes(filter)));
+    }
     const imgPerRow = 4;
     const rows = [];
     for (let i = 0; i <= filteredVizTypes.length; i += imgPerRow) {
