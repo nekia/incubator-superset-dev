@@ -1000,6 +1000,13 @@ export const visTypes = {
         ],
       },
     ],
+    controlOverrides: {
+      viz_type: {
+        label: 'Analytics Type',
+        description: 'The type of Analytics to display',
+        analytics: true,
+      }
+    },
   },
 
 };

@@ -1125,7 +1125,6 @@ class Superset(BaseSupersetView):
         viz_type = form_data.get("viz_type")
         slice_id = form_data.get('slice_id')
         user_id = g.user.get_id() if g.user else None
-        analytics = form_data.get('analytics') if form_data.get('analytics') else False
         slc = None
         if slice_id:
             slc = db.session.query(models.Slice).filter_by(id=slice_id).first()
@@ -1183,7 +1182,6 @@ class Superset(BaseSupersetView):
             "standalone": standalone,
             "user_id": user_id,
             "forced_height": request.args.get('height'),
-            "analytics": analytics,
         }
         table_name = datasource.table_name \
             if datasource_type == 'table' \
