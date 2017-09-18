@@ -971,6 +971,11 @@ export const visTypes = {
           ['agg_centroid'],
           ['max_num_iterations'],
           ['min_frac_reassigned'],
+          ['series'],
+          ['metrics'],
+          ['secondary_metric'],
+          ['limit'],
+          ['show_datatable', 'include_series'],
         ],
       },
     ],
@@ -979,7 +984,25 @@ export const visTypes = {
         label: 'Analytics Type',
         description: 'The type of Analytics to display',
         analytics: true,
-      }
+      },
+      series: {
+        hidden: true,
+      },
+      metrics: {
+        hidden: true,
+      },
+      secondary_metric: {
+        hidden: true,
+      },
+      limit: {
+        hidden: true,
+      },
+      show_datatable: {
+        hidden: true,
+      },
+      include_series: {
+        hidden: true,
+      },
     },
   },
 
