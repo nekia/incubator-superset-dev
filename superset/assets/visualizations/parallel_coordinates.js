@@ -12,14 +12,14 @@ function parallelCoordVis(slice, payload) {
   const fd = slice.formData;
   const data = payload.data;
 
-  let cols = fd.metrics;
+  let cols = fd.all_columns;
   if (fd.include_series) {
     cols = [fd.series].concat(fd.metrics);
   }
 
   const ttypes = {};
   ttypes[fd.series] = 'string';
-  fd.metrics.forEach(function (v) {
+  fd.all_columns.forEach(function (v) {
     ttypes[v] = 'number';
   });
 

@@ -789,7 +789,7 @@ export const visTypes = {
         label: null,
         controlSetRows: [
           ['series'],
-          ['metrics'],
+          ['all_columns'],
           ['secondary_metric'],
           ['limit'],
           ['show_datatable', 'include_series'],
@@ -971,6 +971,10 @@ export const visTypes = {
           ['agg_centroid'],
           ['max_num_iterations'],
           ['min_frac_reassigned'],
+          ['series'],
+          ['secondary_metric'],
+          ['limit'],
+          ['show_datatable', 'include_series'],
         ],
       },
     ],
@@ -979,7 +983,7 @@ export const visTypes = {
         label: 'Analytics Type',
         description: 'The type of Analytics to display',
         analytics: true,
-      }
+      },
     },
   },
 

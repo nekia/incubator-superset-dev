@@ -1428,11 +1428,13 @@ class ParallelCoordinatesViz(BaseViz):
     def query_obj(self):
         d = super(ParallelCoordinatesViz, self).query_obj()
         fd = self.form_data
-        d['metrics'] = copy.copy(fd.get('metrics'))
+        d['metrics'] = copy.copy(fd.get('all_columns'))
         second = fd.get('secondary_metric')
         if second not in d['metrics']:
             d['metrics'] += [second]
+	'''
         d['groupby'] = [fd.get('series')]
+	'''
         return d
 
     def get_data(self, df):
@@ -1517,11 +1519,17 @@ class KmeansViz(BaseViz):
         logging.info("[kmeans] query_obj")
         d = super(KmeansViz, self).query_obj()
         fd = self.form_data
+        d['metrics'] = copy.copy(fd.get('all_columns'))
+        second = fd.get('secondary_metric')
+        if second not in d['metrics']:
+            d['metrics'] += [second]
 
+	'''
         if fd.get('all_columns') and (fd.get('groupby') or fd.get('metrics')):
             raise Exception(_(
                 "Choose either fields to [Group By] and [Metrics] or "
                 "[Columns], not both"))
+	'''
 
         if fd.get('all_columns'):
             d['columns'] = fd.get('all_columns')
@@ -1549,10 +1557,7 @@ class KmeansViz(BaseViz):
 
     def get_data(self, df):
         logging.info("[kmeans] get_data")
-        return dict(
-            records=df.to_dict(orient="records"),
-            columns=list(df.columns),
-        )
+        return df.to_dict(orient="records")
 
 class ArimaViz(BaseViz):
 
