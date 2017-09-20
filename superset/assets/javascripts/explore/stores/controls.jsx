@@ -1,6 +1,7 @@
 import React from 'react';
 import { formatSelectOptionsForRange, formatSelectOptions } from '../../modules/utils';
 import * as v from '../validators';
+import { ALL_COLOR_SCHEMES, spectrums } from '../../modules/colors';
 import MetricOption from '../../components/MetricOption';
 import ColumnOption from '../../components/ColumnOption';
 
@@ -35,6 +36,12 @@ const timeColumnOption = {
     'A reference to the [Time] configuration, taking granularity into ' +
     'account'),
 };
+const sortAxisChoices = [
+  ['alpha_asc', 'Axis ascending'],
+  ['alpha_desc', 'Axis descending'],
+  ['value_asc', 'sum(value) ascending'],
+  ['value_desc', 'sum(value) descending'],
+];
 
 const groupByControl = {
   type: 'SelectControl',
@@ -94,6 +101,7 @@ export const controls = {
   y_axis_bounds: {
     type: 'BoundsControl',
     label: 'Y Axis Bounds',
+    renderTrigger: true,
     default: [null, null],
     description: (
       'Bounds for the Y axis. When left empty, the bounds are ' +
@@ -155,8 +163,24 @@ export const controls = {
     description: '',
   },
 
-  linear_color_scheme: {
+  sort_x_axis: {
     type: 'SelectControl',
+    label: 'Sort X Axis',
+    choices: sortAxisChoices,
+    clearable: false,
+    default: 'alpha_asc',
+  },
+
+  sort_y_axis: {
+    type: 'SelectControl',
+    label: 'Sort Y Axis',
+    choices: sortAxisChoices,
+    clearable: false,
+    default: 'alpha_asc',
+  },
+
+  linear_color_scheme: {
+    type: 'ColorSchemeControl',
     label: 'Linear Color Scheme',
     choices: [
       ['fire', 'fire'],
@@ -165,7 +189,11 @@ export const controls = {
       ['black_white', 'black/white'],
     ],
     default: 'blue_white_yellow',
+    clearable: false,
     description: '',
+    renderTrigger: true,
+    schemes: spectrums,
+    isLinear: true,
   },
 
   normalize_across: {
@@ -197,6 +225,7 @@ export const controls = {
   canvas_image_rendering: {
     type: 'SelectControl',
     label: 'Rendering',
+    renderTrigger: true,
     choices: [
       ['pixelated', 'pixelated (Sharp)'],
       ['auto', 'auto (Smooth)'],
@@ -229,6 +258,14 @@ export const controls = {
     label: 'Include Time',
     description: 'Whether to include the time granularity as defined in the time section',
     default: false,
+  },
+
+  show_perc: {
+    type: 'CheckboxControl',
+    label: 'Show percentage',
+    renderTrigger: true,
+    description: 'Whether to include the percentage in the tooltip',
+    default: true,
   },
 
   bar_stacked: {
@@ -411,7 +448,18 @@ export const controls = {
     label: 'Bottom Margin',
     choices: formatSelectOptions(['auto', 50, 75, 100, 125, 150, 200]),
     default: 'auto',
-    description: 'Bottom marging, in pixels, allowing for more room for axis labels',
+    renderTrigger: true,
+    description: 'Bottom margin, in pixels, allowing for more room for axis labels',
+  },
+
+  left_margin: {
+    type: 'SelectControl',
+    freeForm: true,
+    label: 'Left Margin',
+    choices: formatSelectOptions(['auto', 50, 75, 100, 125, 150, 200]),
+    default: 'auto',
+    renderTrigger: true,
+    description: 'Left margin, in pixels, allowing for more room for axis labels',
   },
 
   granularity: {
@@ -542,37 +590,17 @@ export const controls = {
   },
 
   since: {
-    type: 'SelectControl',
+    type: 'DateFilterControl',
     freeForm: true,
     label: 'Since',
     default: '7 days ago',
-    choices: formatSelectOptions([
-      '1 hour ago',
-      '12 hours ago',
-      '1 day ago',
-      '7 days ago',
-      '28 days ago',
-      '90 days ago',
-      '1 year ago',
-      '100 year ago',
-    ]),
-    description: 'Timestamp from filter. This supports free form typing and ' +
-    'natural language as in `1 day ago`, `28 days` or `3 years`',
   },
 
   until: {
-    type: 'SelectControl',
+    type: 'DateFilterControl',
     freeForm: true,
     label: 'Until',
     default: 'now',
-    choices: formatSelectOptions([
-      'now',
-      '1 day ago',
-      '7 days ago',
-      '28 days ago',
-      '90 days ago',
-      '1 year ago',
-    ]),
   },
 
   max_bubble_size: {
@@ -642,6 +670,13 @@ export const controls = {
     }),
   },
 
+  order_desc: {
+    type: 'CheckboxControl',
+    label: 'Sort Descending',
+    default: true,
+    description: 'Whether to sort descending or ascending',
+  },
+
   rolling_type: {
     type: 'SelectControl',
     label: 'Rolling',
@@ -657,6 +692,19 @@ export const controls = {
     isInt: true,
     description: 'Defines the size of the rolling window function, ' +
     'relative to the time granularity selected',
+  },
+
+  min_periods: {
+    type: 'TextControl',
+    label: 'Min Periods',
+    isInt: true,
+    description: (
+      'The minimum number of rolling periods required to show ' +
+      'a value. For instance if you do a cumulative sum on 7 days ' +
+      'you may want your "Min Period" to be 7, so that all data points ' +
+      'shown are the total of 7 periods. This will hide the "ramp up" ' +
+      'taking place over the first 7 periods'
+    ),
   },
 
   series: {
@@ -1061,6 +1109,14 @@ export const controls = {
     description: 'Whether to display the min and max values of the X axis',
   },
 
+  y_axis_showminmax: {
+    type: 'CheckboxControl',
+    label: 'Y bounds',
+    renderTrigger: true,
+    default: true,
+    description: 'Whether to display the min and max values of the Y axis',
+  },
+
   rich_tooltip: {
     type: 'CheckboxControl',
     label: 'Rich Tooltip',
@@ -1366,6 +1422,16 @@ export const controls = {
     choices: formatSelectOptionsForRange(1, 10),
     description: 'Leaf nodes that represent fewer than this number of events will be initially ' +
     'hidden in the visualization',
+  },
+
+  color_scheme: {
+    type: 'ColorSchemeControl',
+    label: 'Color Scheme',
+    default: 'bnbColors',
+    renderTrigger: true,
+    choices: Object.keys(ALL_COLOR_SCHEMES).map(s => ([s, s])),
+    description: 'The color scheme for rendering chart',
+    schemes: ALL_COLOR_SCHEMES,
   },
 };
 export default controls;

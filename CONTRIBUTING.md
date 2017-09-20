@@ -85,7 +85,7 @@ Before you start changing the docs, you'll want to
 [fork the Superset project on Github](https://help.github.com/articles/fork-a-repo/).
 Once that new repository has been created, clone it on your local machine:
 
-    git clone git@github.com:your_username/superset.git
+    git clone git@github.com:your_username/incubator-superset.git
 
 At this point, you may also want to create a
 [Python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/)
@@ -97,7 +97,7 @@ to manage the Python packages you're about to install:
 Finally, to make changes to the rst files and build the docs using Sphinx, 
 you'll need to install a handful of dependencies from the repo you cloned:
 
-    cd superset
+    cd incubator-superset
     pip install -r dev-reqs-for-docs.txt
 
 To get the feel for how to edit and build the docs, let's edit a file, build
@@ -173,7 +173,7 @@ Check the [OS dependencies](https://superset.incubator.apache.org/installation.h
     source env/bin/activate
 
     # install for development
-    python setup.py develop
+    pip install -e .
 
     # Create an admin user
     fabmanager create-admin --app superset
@@ -380,3 +380,33 @@ to take effect, they need to be compiled using this command:
 Here's an example as a Github PR with comments that describe what the
 different sections of the code do:
 https://github.com/apache/incubator-superset/pull/3013
+
+## Refresh documentation website
+
+  Every once in a while we want to compile the documentation and publish it.
+  Here's how to do it.
+
+  .. code::
+
+    # install doc dependencies
+    pip install -r dev-reqs-for-docs.txt
+
+    # build the docs
+    python setup.py build_sphinx
+
+    # copy html files to temp folder
+    cp -r docs/_build/html/ /tmp/tmp_superset_docs/
+
+    # clone the docs repo
+    cd ~/
+    git clone https://git-wip-us.apache.org/repos/asf/incubator-superset-site.git
+
+    # copy
+    cp -r /tmp/tmp_superset_docs/ ~/incubator-superset-site.git/
+ 
+    # commit and push to `asf-site` branch
+    cd ~/incubator-superset-site.git/
+    git checkout asf-site
+    git add .
+    git commit -a -m "New doc version"
+    git push origin master

@@ -13,6 +13,7 @@ import random
 import unittest
 
 from flask import escape
+import sqlalchemy as sqla
 
 from superset import db, utils, appbuilder, sm, jinja_context, sql_lab
 from superset.models import core as models
@@ -41,6 +42,7 @@ class CoreTests(SupersetTestCase):
     def setUp(self):
         db.session.query(Query).delete()
         db.session.query(models.DatasourceAccessRequest).delete()
+        db.session.query(models.Log).delete()
 
     def tearDown(self):
         db.session.query(Query).delete()
@@ -295,6 +297,19 @@ class CoreTests(SupersetTestCase):
         assert response.status_code == 200
         assert response.headers['Content-Type'] == 'application/json'
 
+    def test_custom_password_store(self):
+        database = self.get_main_database(db.session)
+        conn_pre = sqla.engine.url.make_url(database.sqlalchemy_uri_decrypted)
+
+        def custom_password_store(uri):
+            return "password_store_test"
+
+        database.custom_password_store = custom_password_store
+        conn = sqla.engine.url.make_url(database.sqlalchemy_uri_decrypted)
+        if conn_pre.password:
+            assert conn.password == "password_store_test"
+            assert conn.password != conn_pre.password
+
     def test_databaseview_edit(self, username='admin'):
         # validate that sending a password-masked uri does not over-write the decrypted uri
         self.login(username=username)
@@ -466,6 +481,7 @@ class CoreTests(SupersetTestCase):
             positions.append(d)
         data = {
             'css': '',
+            'duplicate_slices': False,
             'expanded_slices': {},
             'positions': positions,
             'dashboard_title': 'Copy Of Births',
@@ -726,7 +742,22 @@ class CoreTests(SupersetTestCase):
         data = self.get_json_resp('/superset/fave_dashboards_by_username/{}/'.format(username))
         self.assertNotIn('message', data)
 
+    def test_slice_id_is_always_logged_correctly_on_web_request(self):
+        # superset/explore case
+        slc = db.session.query(models.Slice).filter_by(slice_name='Girls').one()
+        qry = db.session.query(models.Log).filter_by(slice_id=slc.id)
+        self.get_resp(slc.slice_url)
+        self.assertEqual(1, qry.count())
+
+    def test_slice_id_is_always_logged_correctly_on_ajax_request(self):
+        # superset/explore_json case
+        self.login(username="admin")
+        slc = db.session.query(models.Slice).filter_by(slice_name='Girls').one()
+        qry = db.session.query(models.Log).filter_by(slice_id=slc.id)
+        slc_url = slc.slice_url.replace("explore", "explore_json")
+        self.get_json_resp(slc_url)
+        self.assertEqual(1, qry.count())
+
 
 if __name__ == '__main__':
     unittest.main()
-
