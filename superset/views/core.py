@@ -27,7 +27,7 @@ from flask_appbuilder.security.sqla import models as ab_models
 from flask_babel import gettext as __
 from flask_babel import lazy_gettext as _
 
-from sqlalchemy import create_engine
+from sqlalchemy import ( create_engine, or_ )
 from werkzeug.routing import BaseConverter
 
 from superset import (
@@ -125,7 +125,7 @@ def check_ownership(obj, raise_if_false=True):
 
 class SliceFilter(SupersetFilter):
     def apply(self, query, func):  # noqa
-        query = query.filter(self.model.analytics == None)
+        query = query.filter(or_(self.model.analytics == None, self.model.analytics.is_(False)))
         if self.has_all_datasource_access():
             return query
         perms = self.get_view_menus('datasource_access')
@@ -1246,7 +1246,7 @@ class Superset(BaseSupersetView):
         slc.datasource_type = datasource_type
         slc.datasource_id = datasource_id
         slc.slice_name = slice_name
-
+        slc.analytics = slc.viz.analytics
         if action in ('saveas') and slice_add_perm:
             self.save_slice(slc)
         elif action == 'overwrite' and slice_overwrite_perm:

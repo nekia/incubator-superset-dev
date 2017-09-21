@@ -43,6 +43,7 @@ class BaseViz(object):
     verbose_name = "Base Viz"
     credits = ""
     is_timeseries = False
+    analytics = False
 
     def __init__(self, datasource, form_data):
         if not datasource:
@@ -1511,6 +1512,7 @@ class KmeansViz(BaseViz):
 
     viz_type = "kmeans"
     verbose_name = _("k-Means clustering")
+    analytics = True
     credits = (
         '<a href="http://madlib.incubator.apache.org/docs/latest/group__grp__kmeans.html">'
         'k-Means Clustering</a>')
@@ -1568,6 +1570,7 @@ class ArimaViz(BaseViz):
 
     viz_type = "arima"
     verbose_name = _("ARIMA - Time Series Analysis")
+    analytics = True
     credits = (
         '<a href="http://madlib.apache.org/docs/latest/group__grp__arima.html">'
         'ARIMA Time Series Analysis</a>')
