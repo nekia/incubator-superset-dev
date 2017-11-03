@@ -1,19 +1,18 @@
 -- DROP FUNCTION IF EXISTS kmeans_sample_udf( data_array_entry text[] );
 DROP TABLE IF EXISTS km_sample CASCADE;
-DROP TABLE IF EXISTS kmeans_sample_udf_ret CASCADE;
-DROP TABLE IF EXISTS km_sample_result_tbl CASCADE;
+DROP TABLE IF EXISTS rettbl;
 
-CREATE TABLE kmeans_sample_udf_ret( pid integer, points1 double precision, points2 double precision, points3 double precision, points4 double precision, points5 double precision, points6 double precision, points7 double precision, points8 double precision, points9 double precision, points10 double precision, points11 double precision, points12 double precision, points13 double precision, cluster_id integer );
 
 CREATE OR REPLACE FUNCTION kmeans_sample_udf(
+    _tbl_type anyelement,
     data_array_entry text[],
     num_cluster integer,
     fn_dist text,
     agg_centroid text,
     max_num_iterations integer,
     min_frac_reassigned double precision )
-RETURNS setof kmeans_sample_udf_ret AS
-$$
+RETURNS SETOF anyelement AS
+$func$
 DECLARE
     i text;
     entry text = '';
@@ -41,15 +40,17 @@ BEGIN
                             ''madlib.%s'', $2, $3)', fn_dist, agg_centroid )
     USING num_cluster, max_num_iterations, min_frac_reassigned;
 
-    RETURN QUERY SELECT data.pid, data1.points1, data1.points2, data1.points3, data1.points4, data1.points5, data1.points6, data1.points7, data1.points8, data1.points9, data1.points10, data1.points11, data1.points12, data1.points13, (madlib.closest_column(centroids, points)).column_id as cluster_id
-    FROM km_sample_src as data, km_sample as data1, km_result
-    WHERE data.pid = data1.pid
-    ORDER BY data.pid;
-    
-    RETURN;
+    -- RETURN QUERY EXECUTE format('
+    EXECUTE format('
+        INSERT INTO %I
+        SELECT km_sample.pid, (madlib.closest_column(centroids, points)).column_id as cluster_id, %s
+        FROM km_sample, km_sample_src, km_result
+        WHERE km_sample.pid = km_sample_src.pid
+        ORDER BY km_sample.pid', pg_typeof(_tbl_type), entry);
+    RETURN QUERY EXECUTE format('TABLE %s', pg_typeof(_tbl_type));
 
 END;
-$$ LANGUAGE plpgsql VOLATILE;
+$func$ LANGUAGE plpgsql;
 
 CREATE TABLE km_sample(pid int,
     points1 double precision,
@@ -80,19 +81,26 @@ INSERT INTO km_sample VALUES
 (9,  14.83, 1.64, 2.17, 14, 97, 2.8, 2.98, 0.29, 1.98, 5.2, 1.08, 2.85, 1045, 0),
 (10, 13.86, 1.35, 2.27, 16, 98, 2.98, 3.15, 0.22, 1.8500, 7.2199, 1.01, 3.55, 1045, 0);
 
-create table km_sample_result_tbl as
-select * from kmeans_sample_udf( ARRAY[
+CREATE TABLE rettbl(pid int,
+    points1 double precision,
+    points2 double precision,
+    points3 double precision,
+    cluster_id integer
+);
+
+-- create table rettbl as
+select * from kmeans_sample_udf( NULL::public.kmeans_sample_udf_ret, ARRAY[
         'points1',
         'points2',
-        'points3',
-        'points4',
-        'points5',
-        'points6',
-        'points7',
-        'points8',
-        'points9',
-        'points10',
-        'points11',
-        'points12',
-        'points13'
+        'points3'
+        -- 'points4',
+        -- 'points5',
+        -- 'points6',
+        -- 'points7',
+        -- 'points8',
+        -- 'points9',
+        -- 'points10',
+        -- 'points11',
+        -- 'points12',
+        -- 'points13'
     ], 4, 'squared_dist_norm2', 'avg', 20, 0.001 );

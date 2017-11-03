@@ -1541,18 +1541,19 @@ class KmeansViz(BaseViz):
         # d['analysis'] = True
         fd['analysis'] = True
 
-        statement = ''
+        statement = 'NULL::public.kmeans_sample_udf_ret, '
+        statement_col = ''
         for col in d['columns']:
-            statement = statement + '\'' + col + '\','
+            statement_col = statement_col + '\'' + col + '\','
 
-        statement = statement[:-1]
-        statement = 'ARRAY[ ' + statement + ' ]'
-        logging.info(statement)
+        statement_col = statement_col[:-1]
+        statement = statement + 'ARRAY[ ' + statement_col + ' ]'
         statement = statement + ', ' + str(fd.get('num_cluster'))
         statement = statement + ', \'' + fd.get('fn_dist') + '\''
         statement = statement + ', \'' + fd.get('agg_centroid') + '\''
         statement = statement + ', ' + str(fd.get('max_num_iterations'))
         statement = statement + ', ' + str(fd.get('min_frac_reassigned'))
+        logging.info(statement)
 
         fd['from_statement'] = 'kmeans_sample_udf( ' + statement + ' )'
         return d

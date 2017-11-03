@@ -7,10 +7,11 @@ import pandas as pd
 
 from sqlalchemy import (
     Column, Integer, String, ForeignKey, Text, Boolean,
-    DateTime,
+    DateTime, Float
 )
 import sqlalchemy as sa
-from sqlalchemy import asc, and_, desc, select
+from sqlalchemy import asc, and_, desc, select, func
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.expression import TextAsFrom
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import table, literal_column, text, column
@@ -27,6 +28,7 @@ from superset.models.core import Database
 from superset.jinja_context import get_template_processor
 from superset.models.helpers import set_perm
 
+Base = declarative_base()
 
 class TableColumn(Model, BaseColumn):
 
@@ -150,6 +152,19 @@ class SqlMetric(Model, BaseMetric):
                 SqlMetric.table_id == lookup_metric.table_id,
                 SqlMetric.metric_name == lookup_metric.metric_name).first()
         return import_util.import_simple_obj(db.session, i_metric, lookup_obj)
+
+class kmeans_sample_udf_ret(Base):
+    __tablename__ = 'kmeans_sample_udf_ret'
+
+    pid = Column(Integer, primary_key=True)
+    cluster_id = Column(Integer)
+
+    @staticmethod
+    def add_column(engine, column):
+        column_name = column.compile(dialect=engine.dialect)
+        column_type = column.type.compile(engine.dialect)
+        engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (kmeans_sample_udf_ret.__tablename__, column_name, column_type))
+
 
 
 class SqlaTable(Model, BaseDatasource):
@@ -338,6 +353,14 @@ class SqlaTable(Model, BaseDatasource):
             qry = qry.select_from(fd.get('from_statement'))
         else:
             qry = self.get_sqla_query(**query_obj)
+
+        # ipdb.set_trace()
+        kmeans_sample_udf_ret.__table__.drop(engine)
+        Base.metadata.create_all(bind=engine, tables=[kmeans_sample_udf_ret.__table__])
+        cols = query_obj.get('form_data').get('all_columns')
+        for m in cols:
+            kmeans_sample_udf_ret.add_column(engine, Column(m, Float()))
+
         sql = str(
             qry.compile(
                 engine,
