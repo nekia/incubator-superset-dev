@@ -994,13 +994,9 @@ export const visTypes = {
       {
         label: 'Analytics Options',
         controlSetRows: [
-          ['all_columns'],
-          ['row_limit'],
-          ['num_cluster'],
-          ['fn_dist'],
-          ['agg_centroid'],
-          ['max_num_iterations'],
-          ['min_frac_reassigned'],
+          ['timestamp_column'],
+          ['timeseries_column'],
+          ['steps_ahead'],
         ],
       },
     ],

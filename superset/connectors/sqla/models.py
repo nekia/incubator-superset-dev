@@ -153,8 +153,8 @@ class SqlMetric(Model, BaseMetric):
                 SqlMetric.metric_name == lookup_metric.metric_name).first()
         return import_util.import_simple_obj(db.session, i_metric, lookup_obj)
 
-class kmeans_sample_udf_ret(Base):
-    __tablename__ = 'kmeans_sample_udf_ret'
+class kmeans_udf_result(Base):
+    __tablename__ = 'kmeans_udf_result'
 
     pid = Column(Integer, primary_key=True)
     cluster_id = Column(Integer)
@@ -163,9 +163,14 @@ class kmeans_sample_udf_ret(Base):
     def add_column(engine, column):
         column_name = column.compile(dialect=engine.dialect)
         column_type = column.type.compile(engine.dialect)
-        engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (kmeans_sample_udf_ret.__tablename__, column_name, column_type))
+        engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (kmeans_udf_result.__tablename__, column_name, column_type))
 
+class arima_udf_result(Base):
+    __tablename__ = 'arima_udf_result'
 
+    time_id = Column(DateTime(), primary_key=True)
+    timeseries_data = Column(Float())
+    forecast_data = Column(Float())
 
 class SqlaTable(Model, BaseDatasource):
 
@@ -351,15 +356,21 @@ class SqlaTable(Model, BaseDatasource):
             logging.info(str(query_obj))
             qry = sa.select('*')
             qry = qry.select_from(fd.get('from_statement'))
+            if fd.get('viz_type') == 'kmeans':
+                logging.info("ANALYSIS [k-means] !!!")
+                # kmeans_udf_result.__table__.drop(engine)
+                Base.metadata.create_all(bind=engine, tables=[kmeans_udf_result.__table__])
+                cols = query_obj.get('form_data').get('all_columns')
+                for m in cols:
+                    kmeans_udf_result.add_column(engine, Column(m, Float()))
+            elif fd.get('viz_type') == 'arima':
+                logging.info("ANALYSIS [ARIMA] !!!")
+                # arima_udf_result.__table__.drop(engine)
+                Base.metadata.create_all(bind=engine, tables=[arima_udf_result.__table__])
+            else:
+                logging.info("ANALYSIS [OTHER ] !!!")
         else:
             qry = self.get_sqla_query(**query_obj)
-
-        # ipdb.set_trace()
-        kmeans_sample_udf_ret.__table__.drop(engine)
-        Base.metadata.create_all(bind=engine, tables=[kmeans_sample_udf_ret.__table__])
-        cols = query_obj.get('form_data').get('all_columns')
-        for m in cols:
-            kmeans_sample_udf_ret.add_column(engine, Column(m, Float()))
 
         sql = str(
             qry.compile(
@@ -367,7 +378,6 @@ class SqlaTable(Model, BaseDatasource):
                 compile_kwargs={"literal_binds": True}
             )
         )
-        logging.info(sql)
         sql = sqlparse.format(sql, reindent=True)
         return sql
 

@@ -1,9 +1,9 @@
--- DROP FUNCTION IF EXISTS kmeans_sample_udf( data_array_entry text[] );
+-- DROP FUNCTION IF EXISTS kmeans_udf( data_array_entry text[] );
 DROP TABLE IF EXISTS km_sample CASCADE;
 DROP TABLE IF EXISTS rettbl;
 
 
-CREATE OR REPLACE FUNCTION kmeans_sample_udf(
+CREATE OR REPLACE FUNCTION kmeans_udf(
     _tbl_type anyelement,
     data_array_entry text[],
     num_cluster integer,
@@ -82,14 +82,14 @@ INSERT INTO km_sample VALUES
 (10, 13.86, 1.35, 2.27, 16, 98, 2.98, 3.15, 0.22, 1.8500, 7.2199, 1.01, 3.55, 1045, 0);
 
 CREATE TABLE rettbl(pid int,
+    cluster_id integer,
     points1 double precision,
     points2 double precision,
-    points3 double precision,
-    cluster_id integer
+    points3 double precision
 );
 
 -- create table rettbl as
-select * from kmeans_sample_udf( NULL::public.kmeans_sample_udf_ret, ARRAY[
+select * from kmeans_udf( NULL::public.rettbl, ARRAY[
         'points1',
         'points2',
         'points3'

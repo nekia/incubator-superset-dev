@@ -1538,10 +1538,10 @@ class KmeansViz(BaseViz):
             d['groupby'] = []
             order_by_cols = fd.get('order_by_cols') or []
             d['orderby'] = [json.loads(t) for t in order_by_cols]
-        # d['analysis'] = True
+
         fd['analysis'] = True
 
-        statement = 'NULL::public.kmeans_sample_udf_ret, '
+        statement = 'NULL::public.kmeans_udf_result, '
         statement_col = ''
         for col in d['columns']:
             statement_col = statement_col + '\'' + col + '\','
@@ -1555,7 +1555,7 @@ class KmeansViz(BaseViz):
         statement = statement + ', ' + str(fd.get('min_frac_reassigned'))
         logging.info(statement)
 
-        fd['from_statement'] = 'kmeans_sample_udf( ' + statement + ' )'
+        fd['from_statement'] = 'kmeans_udf( ' + statement + ' )'
         return d
 
     def get_data(self, df):
@@ -1578,7 +1578,7 @@ class ArimaViz(BaseViz):
 
     def query_obj(self):
         logging.info("[ARIMA] query_obj")
-        d = super(KmeansViz, self).query_obj()
+        d = super(ArimaViz, self).query_obj()
         fd = self.form_data
 
         if fd.get('all_columns') and (fd.get('groupby') or fd.get('metrics')):
@@ -1586,13 +1586,26 @@ class ArimaViz(BaseViz):
                 "Choose either fields to [Group By] and [Metrics] or "
                 "[Columns], not both"))
 
-        if fd.get('all_columns'):
-            d['columns'] = fd.get('all_columns')
+        if fd.get('timestamp_column'):
+            d['time_col'] = fd.get('timestamp_column')
+
+        if fd.get('timeseries_column'):
+            d['data_col'] = fd.get('timeseries_column')
             d['groupby'] = []
             order_by_cols = fd.get('order_by_cols') or []
             d['orderby'] = [json.loads(t) for t in order_by_cols]
-        d['analysis'] = True
+
         fd['analysis'] = True
+
+        statement = 'NULL::public.arima_udf_result'
+        statement = statement + ', \'' + self.datasource.name + '\''
+        statement = statement + ', \'' + d['time_col'] + '\''
+        statement = statement + ', \'' + d['data_col'] + '\''
+        statement = statement + ', ' + str(fd.get('steps_ahead'))
+        logging.info(statement)
+
+        fd['from_statement'] = 'arima_udf( ' + statement + ' )'
+
         return d
 
     def get_data(self, df):

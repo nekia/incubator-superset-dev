@@ -989,6 +989,42 @@ export const controls = {
     ),
   },
 
+  timeseries_column: {
+    type: 'SelectControl',
+    multi: false,
+    label: 'Timeseries data Column',
+    default: [],
+    description: (
+      'The name of the column containing the time series data. ' +
+      'This data is currently restricted to DOUBLE PRECISION.'
+    ),
+    mapStateToProps: state => ({
+      choices: (state.datasource) ? state.datasource.all_cols : [],
+    }),
+  },
+
+  timestamp_column: {
+    type: 'SelectControl',
+    multi: false,
+    label: 'Timestamp Column',
+    default: [],
+    description: (
+      'The name of the column containing the timestamp (index) data. ' +
+      'This could be a serial index (INTEGER) or date/time value (TIMESTAMP)'
+    ),
+    mapStateToProps: state => ({
+      choices: (state.datasource) ? state.datasource.all_cols : [],
+    }),
+  },
+
+  steps_ahead: {
+    type: 'TextControl',
+    isInt: true,
+    label: 'The number of steps to forecast',
+    default: 10,
+    description: 'The number of steps to forecast at the end of the time series.',
+  },
+
   instant_filtering: {
     type: 'CheckboxControl',
     label: 'Instant Filtering',

@@ -33,7 +33,12 @@ BEGIN
     -- RETURN QUERY EXECUTE format('
     EXECUTE format('
         INSERT INTO %s
-        select %s, %s, 0 as isforecast from arima_beer union all select steps_ahead + src.num, forecast_value, 1 from arima_beer_forecast_output, (select count(*) as num from arima_beer) src',
+        select ''2012-10-01 0:0''::date + %s, %s, null from arima_beer
+        union all
+            select ''2012-10-01 0:0''::date + (steps_ahead + src.num)::integer,
+                null, forecast_value
+            from arima_beer_forecast_output,
+                (select count(*) as num from arima_beer) src',
         pg_typeof(_tbl_type), timestamp_col, timeseries_col);
     RETURN QUERY EXECUTE format('TABLE %s', pg_typeof(_tbl_type));
 
@@ -41,9 +46,9 @@ END;
 $func$ LANGUAGE plpgsql;
 
 CREATE TABLE arima_result(
-    time_id int,
+    time_id timestamp,
     timeseries_data double precision,
-    isforecast integer
+    forecast_data double precision
 );
 
 select * from arima_udf( NULL::public.arima_result, 'arima_beer', 'time_id', 'value', 10 );
